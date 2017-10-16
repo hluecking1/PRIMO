@@ -36,7 +36,7 @@ class BayesianNetwork(object):
     def add_node(self, node):
         if isinstance(node, nodes.RandomNode):
             if node.name in self.node_lookup:
-                raise ValueError("The network already contains a node " \
+                raise ValueError("The network already contains a node " 
                                  "called '{}'.".format(node.name))
             self.node_lookup[node.name] = node
             self.graph.add_node(node)
@@ -61,15 +61,15 @@ class BayesianNetwork(object):
             self.graph.add_edge(self.node_lookup[from_name], self.node_lookup[to_name])
             self.node_lookup[to_name].add_parent(self.node_lookup[from_name])
         else:
-            raise Exception("Tried to add an Edge between two Nodes of " \
-                            "which at least one was not contained in " \
+            raise Exception("Tried to add an Edge between two Nodes of " 
+                            "which at least one was not contained in " 
                             "the BayesianNetwork")
 
     def get_node(self, node_name):
         try:
             return self.node_lookup[node_name]
         except KeyError:
-            raise Exception("There is no node with name {} in the " \
+            raise Exception("There is no node with name {} in the " 
                             "BayesianNetwork".format(node_name))
             
     def change_node_values(self, node, new_values):
@@ -90,7 +90,7 @@ class BayesianNetwork(object):
             for child in self.graph.succ[node]:
                 child._update_dimensions()
         else:
-            raise Exception("There is no node with name {} in " \
+            raise Exception("There is no node with name {} in " 
                             "the network.".format(node))
             
     def change_node_name(self, old_name, new_name):
@@ -122,7 +122,7 @@ class BayesianNetwork(object):
                 self.graph.add_edge(self.node_lookup[parent], n)
             
         else:
-            raise Exception("There is no node with name {} in the " \
+            raise Exception("There is no node with name {} in the " 
                             "network.".format(old_name))
 
     def get_all_nodes(self):

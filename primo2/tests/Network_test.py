@@ -80,7 +80,7 @@ class BayesNetTest(unittest.TestCase):
         self.assertEqual(n2.name, "NewName")
         with self.assertRaises(Exception) as cm:
             self.bn.get_node("Node2")
-        self.assertEqual(str(cm.exception), "There is no node with name " \
+        self.assertEqual(str(cm.exception), "There is no node with name " 
                          "Node2 in the BayesianNetwork")
         
         also_n2 = self.bn.get_node("NewName")
@@ -107,14 +107,14 @@ class BayesNetTest(unittest.TestCase):
         self.assertEqual(n2.name, "NewName")
         with self.assertRaises(Exception) as cm:
             self.bn.get_node("Node2")
-        self.assertEqual(str(cm.exception), "There is no node with name " \
+        self.assertEqual(str(cm.exception), "There is no node with name " 
                          "Node2 in the BayesianNetwork")
         
         self.bn.change_node_name("NewName", "2ndNewName")
         self.assertEqual(n2.name, "2ndNewName")
         with self.assertRaises(Exception) as cm:
             self.bn.get_node("NewName")
-        self.assertEqual(str(cm.exception), "There is no node with name " \
+        self.assertEqual(str(cm.exception), "There is no node with name " 
                          "NewName in the BayesianNetwork")
                 
 #    def test_addEdge(self):

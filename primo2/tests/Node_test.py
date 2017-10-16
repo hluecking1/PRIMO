@@ -84,7 +84,8 @@ class DiscreteNode(unittest.TestCase):
         cpd = np.array([0.2,0.8])
         with self.assertRaises(ValueError) as cm:
             n.set_cpd(cpd)
-        self.assertEqual(str(cm.exception), "The dimensions of the given cpd do not match the dependency structure of the node.")
+        self.assertEqual(str(cm.exception), "The dimensions of the given cpd "
+                         "do not match the dependency structure of the node.")
         
     def test_set_invalid_cpd_parents(self):
         n = nodes.DiscreteNode("Node1", ["Value1", "Value2"])
@@ -93,7 +94,8 @@ class DiscreteNode(unittest.TestCase):
         cpd = np.array([[0.2,0.3], [0.4, 0.8], [0.7,0.6]])
         with self.assertRaises(ValueError) as cm:
             n.set_cpd(cpd)
-        self.assertEqual(str(cm.exception), "The dimensions of the given cpd do not match the dependency structure of the node.")
+        self.assertEqual(str(cm.exception), "The dimensions of the given cpd "
+                         "do not match the dependency structure of the node.")
         
         
     def test_set_cpd_two_parents(self):
@@ -242,11 +244,14 @@ class DiscreteNode(unittest.TestCase):
         
         with self.assertRaises(ValueError) as cm:
             n._get_single_probability("Value1", {"Node2": "Value6"})
-        self.assertEqual(str(cm.exception), "There is no conditional probability for parent {}, value {} in node {}.".format("Node2", "Value6", "Node1"))
+        self.assertEqual(str(cm.exception), "There is no conditional "
+                         "probability for parent {}, value {} in node "
+                         "{}.".format("Node2", "Value6", "Node1"))
         
         with self.assertRaises(KeyError) as cm:
             n._get_single_probability("Value1")
-        self.assertEqual(str(cm.exception), "'parentValues need to specify a value for parent {} of node: {}.'".format("Node2", "Node1"))
+        self.assertEqual(str(cm.exception), "'parentValues need to specify a "
+                         "value for parent {} of node: {}.'".format("Node2", "Node1"))
         
     def test_get_probability(self):
         n = nodes.DiscreteNode("Node1", ["Value1", "Value2"])
@@ -303,7 +308,9 @@ class DiscreteNode(unittest.TestCase):
         
         with self.assertRaises(ValueError) as cm:
             n.get_probability("Value1", {"Node2": ["Value6"]})
-        self.assertEqual(str(cm.exception), "There is no conditional probability for parent {}, values {} in node {}.".format("Node2", "['Value6']", "Node1"))
+        self.assertEqual(str(cm.exception), "There is no conditional "
+                         "probability for parent {}, values {} in node "
+                         "{}.".format("Node2", "['Value6']", "Node1"))
         
         
     def test_get_probability_multiple_parents(self):
@@ -333,7 +340,9 @@ class DiscreteNode(unittest.TestCase):
         n.set_cpd(cpd)
         with self.assertRaises(ValueError) as cm:
             n.get_probability("Value1", {"Node2": "Value6"})
-        self.assertEqual(str(cm.exception), "There is no conditional probability for parent {}, value {} in node {}.".format("Node2", "Value6", "Node1"))
+        self.assertEqual(str(cm.exception), "There is no conditional "
+                         "probability for parent {}, value {} in node "
+                         "{}.".format("Node2", "Value6", "Node1"))
         
         #TODO consider enforcing the same ordering of the value probabilities as speciefied
         # in the lists inside the dictionary
