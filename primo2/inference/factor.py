@@ -508,7 +508,6 @@ class Factor(object):
                 Factor
                 A new factor where the given variables has been summed out.
         """
-        
         if not isinstance(variables, (list,set)):
             variables = [variables]
             
@@ -519,6 +518,37 @@ class Factor(object):
             res.variableOrder.remove(v)
             
         return res
+
+    def maximize(self, variables):
+        """
+            Function to create a new factor with the given variable maxed out
+            of this factor.
+            
+            Parameter
+            ---------
+            variables: String, RandomNode, [String,], [RandomNode,], set(String,) or set(RandomNode)
+                Either a single variable or a list of variables that are to
+                be removed.
+                Variables can either be addressed by their names or by the
+                nodes themselves.
+                
+            Returns
+            ------
+                Factor
+                A new factor where the given variables has been summed out.
+        """
+        
+        if not isinstance(variables, (list,set)):
+            variables = [variables]
+            
+        res = self.copy()
+        for v in variables:
+            res.potentials = np.amax(res.potentials, axis=res.variableOrder.index(v))
+            del res.values[v]
+            res.variableOrder.remove(v)
+            
+        return res
+
         
     def get_potential(self, variables=None):
         """

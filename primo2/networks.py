@@ -23,6 +23,7 @@ import networkx as nx
 
 from . import exceptions
 from . import nodes
+import primo2
 
 
 class BayesianNetwork(object):
@@ -207,9 +208,10 @@ class DynamicBayesianNetwork(object):
             See add_transition for more information.
         """
         super(DynamicBayesianNetwork, self).__init__()
-        self._b0 = BayesianNetwork() if b0 is None else b0
-        self._two_tbn = BayesianNetwork() if two_tbn is None else two_tbn
+        self._b0 = DecisionNetwork() if b0 is None else b0
+        self._two_tbn = TwoTDN() if two_tbn is None else two_tbn
         self._transitions = []
+        self._time = 0
         if transitions is not None:
             self.add_transitions(transitions)
         
@@ -303,6 +305,7 @@ class DynamicBayesianNetwork(object):
         for transition in transitions:
             self.add_transition(transition[0], transition[1])
 
+
     @property
     def transitions(self):
         """Get the transition model.
@@ -314,14 +317,72 @@ class DynamicBayesianNetwork(object):
             See add_transition for more information.
         """
         return self._transitions
+
+
     
 class DecisionNetwork(object):
     
     def __init__(self):
-        self.node_lookup ={}
+        self.node_lookup = {}
+        self.partialOrdering = []
+        self.random_nodes = []
+        self.decision_nodes = []
+        self.utility_nodes = []
+
     
     def add_node(self, node):
-        self.node_lookup[node.name] = node
+        if isinstance(node, primo2.nodes.RandomNode):
+            if node.name in self.node_lookup.keys():
+                raise Exception("Node name already exists in Bayesnet: "+node.name)
+            if isinstance(node, primo2.nodes.DiscreteNode):
+                self.random_nodes.append(node)
+            elif isinstance(node, primo2.nodes.UtilityNode):
+                self.utility_nodes.append(node)
+            elif isinstance(node, primo2.nodes.DecisionNode):
+                self.decision_nodes.append(node)
+            else:
+                raise Exception("Tried to add a node which the Bayesian Decision Network can not work with")
+            self.node_lookup[node.name]=node
+        else:
+            raise Exception("Can only add 'Node' and its subclasses as nodes into the BayesianNetwork")
     
-    def add_edge(self, from_name, to_name):
-        self.node_lookup[to_name].add_parent(self.node_lookup[from_name])
+    def add_edge(self, node_from, node_to):
+       
+        self.node_lookup[node_to].add_parent(self.node_lookup[node_from])
+        
+    def get_PartialOrdering(self):
+        return self.partialOrdering
+
+    def set_PartialOrdering(self,partialOrder):
+        self.partialOrdering = partialOrder
+
+    def get_all_nodes(self):
+        '''Returns all RandomNodes'''
+        return self.random_nodes
+
+    def get_all_decision_nodes(self):
+        return self.decision_nodes
+
+    def get_all_utility_nodes(self):
+        return self.utility_nodes
+
+class Two_TDN(DecisionNetwork):
+    def __init__(self, decisionnet=None):
+        super(Two_TDN, self).__init__()
+
+        self.init_nodes = self.node_lookup
+
+
+    def set_conditional_distribution():
+        
+
+
+
+        
+
+
+
+
+
+
+

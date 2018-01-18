@@ -69,7 +69,7 @@ f_wgEm = f_wgE.marginalize("wet_grass")
 #print (f_sp * f_wgEm).marginalize("sprinkler").potentials
 
 print "f_wgEm variableorder: ", f_wgEm.variableOrder
-print "f_wgEm variables: ", f_wgEm.variables
+# print "f_wgEm variables: ", f_wgEm.variables
 print "f_wgEm: ", f_wgEm.potentials
 #print "f_sp: ", f_sp.potentials
 print "sp*wg: ", (f_sp * f_wgEm).potentials

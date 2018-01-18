@@ -12,6 +12,8 @@ import functools
 
 from ..nodes import UtilityNode
 from .factor import Factor
+import primo2.nodes
+import numpy as np
 
 class VariableElimination(object):
     
@@ -133,8 +135,7 @@ class VariableElimination(object):
         
         eliminations = [node for node in self.net.node_lookup.values() if not isinstance(node, UtilityNode)]
         return self.generalized_VE(factors, eliminations)[1].potentials
-        
-    
+            
     def _optimize_locally(self, decisionNodeName):
         """
             Helper function to choose the optimal decision for the given
@@ -214,6 +215,82 @@ class VariableElimination(object):
             solution[decisionNode] = localDecision
             
         return solution
+           
+
+    def inner_product(self,factors, utilities):
+        """
+            Helper Function to multiply all factors in the given list. 
+            This function is guided by the Algorithm 7.3.2 at page 112 in "Bayesian Reasoning and Machine Learning" from David Barber. 
+            Its the inner_product before the summing/maxing out
+
             
-        
-        
+            Parameters
+            ----------
+            factors: list
+                A list of factors to be multiplied with
+
+            utilities: list
+                A list of utilities to be multiplied with the factors
+
+
+                
+            Returns
+            -------
+                factor
+                The resulting factor
+        """
+        prob_product = factors[0]
+        utility_factors = [Factor.from_utility_node(i) for i in utilities]
+        utility_sum = utility_factors[0]
+
+        for i,v in enumerate(factors):
+            if i != len(factors)-1:
+                prob_product = prob_product*factors[i+1]
+
+        for i,v in enumerate(utility_factors):
+            if i != len(utility_factors)-1:
+                utility_sum = utility_sum+utility_factors[i+1]
+
+        result = prob_product*utility_sum
+
+        return result
+
+    def max_sum(self,decisionNode):
+        """
+            Max Sum Algorithm taken from the Algorithm 7.3.2 at page 112 in 
+            "Bayesian Reasoning and Machine Learning" from David Barber. 
+
+            
+            Parameters
+            ----------
+            decisionNode: String
+                The optimal decision
+                
+            Returns
+            -------
+                List
+                A list containing the optimal variable and corresponding optimal utility value of the resulting max sum algorithm
+        """
+
+        partialOrder = self.net.get_PartialOrdering()
+        reverseOrder = partialOrder[::-1]
+        randomVariables = self.net.get_all_nodes()
+        utilities = self.net.get_all_utility_nodes()
+                            
+        factors = []
+        for node in randomVariables:
+            factors.append(Factor.from_node(node))
+
+        current = self.inner_product(factors,utilities)
+        for i in reverseOrder:
+            if isinstance(i,list) or isinstance(i,primo2.nodes.DiscreteNode):
+                current = current.marginalize(i)
+
+            elif i != decisionNode:
+                current = current.maximize(i)
+                
+        return [current.values.values()[0][np.argmax(current.potentials)],max(current.potentials)]
+
+                        
+                    
+
