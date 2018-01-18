@@ -182,10 +182,10 @@ print("Get optimal decision for education using max_sum Algorithm: {}".format(ve
 print("Get optimal decision for startup using max_sum Algorithm: {}".format(ve.max_sum("startup")))
 # print("Optimal deciosn: ", ve.get_optimal_decisions(["startup", "education"]))
 
-net2 = net.copy()
-d_net = DynamicBayesianNetwork(b0=net)
+# net2 = net.copy()
+# d_net = DynamicBayesianNetwork(b0=net)
 
 
 
-ve = VariableElimination(d_net._b0)
-print("Get optimal decision for startup using max_sum Algorithm: {}".format(ve.max_sum("startup")))
+# ve = VariableElimination(d_net._b0)
+# print("Get optimal decision for startup using max_sum Algorithm: {}".format(ve.max_sum("startup")))
