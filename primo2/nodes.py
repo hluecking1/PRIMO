@@ -88,6 +88,9 @@ class DiscreteNode(RandomNode):
         self.parentOrder = []
         self.valid = False
         self._update_dimensions()
+
+    def rename(self, new_name):
+        self.name = new_name
         
     def add_parent(self, parentNode):
         """
@@ -106,7 +109,7 @@ class DiscreteNode(RandomNode):
         self.parents[parentNode.name] = parentNode
         self.parentOrder.append(parentNode.name)
         self._update_dimensions()
-        
+
     def set_values(self, new_values):
         """
             Allows to change/set the values of this variable. This will 
@@ -421,7 +424,10 @@ class UtilityNode(RandomNode):
         self.parentOrder = []
         self.utilities = self.cpd # Use different name for cpd
         self.valid = False
-        
+
+    def rename(self, new_name):
+        self.name = new_name
+
     def add_parent(self, parentNode):
         """
             Adds the given node as a parent/cause node of this node. 
@@ -540,6 +546,8 @@ class DecisionNode(RandomNode):
         self.deterministic = True
         self._update_dimensions()
 
+    def rename(self, new_name):
+        self.name = new_name
 
     def add_parent(self, parentNode):
         """
@@ -597,11 +605,10 @@ class DecisionNode(RandomNode):
         
 
 if __name__ == "__main__":
-    d1 = DiscreteNode("a")
-    d1.set_cpd(np.array([0.3,0.7]))
-    d2 = DiscreteNode("b", [])
-    d2.add_parent(d1)
-    d2.set_cpd(np.array([100,10]))
-    
-    print(d2.cpd)
+
+    costs = UtilityNode("costs")
+    costs_ = UtilityNode("costs_")
+    costs_.add_parent(costs)
+
+    print(costs_.utilities)
     

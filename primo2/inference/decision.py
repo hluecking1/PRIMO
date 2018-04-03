@@ -12,7 +12,7 @@ import functools
 
 from ..nodes import UtilityNode
 from .factor import Factor
-import primo2.nodes
+from primo2.nodes import DiscreteNode, DecisionNode, UtilityNode
 import numpy as np
 
 class VariableElimination(object):
@@ -217,11 +217,12 @@ class VariableElimination(object):
         return solution
            
 
-    def inner_product(self,factors, utilities):
+    def inner_product(self, factors, utilities):
         """
             Helper Function to multiply all factors in the given list. 
-            This function is guided by the Algorithm 7.3.2 at page 112 in "Bayesian Reasoning and Machine Learning" from David Barber. 
-            Its the inner_product before the summing/maxing out
+            This function is guided by the Algorithm 7.3.2 at page 112 in "Bayesian Reasoning and Machine Learning"
+            from David Barber.
+            Here the inner_product is calculated before the summing/maxing out using factors
 
             
             Parameters
@@ -243,11 +244,11 @@ class VariableElimination(object):
         utility_factors = [Factor.from_utility_node(i) for i in utilities]
         utility_sum = utility_factors[0]
 
-        for i,v in enumerate(factors):
+        for i, v in enumerate(factors):
             if i != len(factors)-1:
                 prob_product = prob_product*factors[i+1]
 
-        for i,v in enumerate(utility_factors):
+        for i, v in enumerate(utility_factors):
             if i != len(utility_factors)-1:
                 utility_sum = utility_sum+utility_factors[i+1]
 
@@ -272,24 +273,28 @@ class VariableElimination(object):
                 A list containing the optimal variable and corresponding optimal utility value of the resulting max sum algorithm
         """
 
-        partialOrder = self.net.get_PartialOrdering()
+        partialOrder = self.net.get_partial_ordering()
         reverseOrder = partialOrder[::-1]
-        randomVariables = self.net.get_all_nodes()
-        utilities = self.net.get_all_utility_nodes()
+        randomVariables = self.net.get_random_nodes()
+        utilities = self.net.get_utility_nodes()
                             
         factors = []
         for node in randomVariables:
             factors.append(Factor.from_node(node))
 
-        current = self.inner_product(factors,utilities)
+        current = self.inner_product(factors, utilities)
         for i in reverseOrder:
-            if isinstance(i,list) or isinstance(i,primo2.nodes.DiscreteNode):
+            if isinstance(i, list):
+                if all(isinstance(self.net.node_lookup[val], DiscreteNode) for val in i):
+                    current = current.marginalize(i)
+                else:
+                    raise Exception("Marginalizing failed: Not all elements in the list are Discrete Nodes")
+            elif isinstance(self.net.node_lookup[i], DiscreteNode):
                 current = current.marginalize(i)
-
             elif i != decisionNode:
                 current = current.maximize(i)
                 
-        return [current.values.values()[0][np.argmax(current.potentials)],max(current.potentials)]
+        return [current.values.values()[0][np.argmax(current.potentials)], max(current.potentials)]
 
                         
                     
