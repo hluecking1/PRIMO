@@ -185,6 +185,184 @@ class BayesianNetwork(object):
         return len(self.graph)
 
 
+# class DynamicBayesianNetwork(object):
+#     """Class representing a the structure of a dynamic Bayesian network.
+#
+#     This temporal relationship is modelled as a 2-time-slice Bayesian
+#     network (2-TBN; Koller & Friedman, 2009, §6.2.2). The Bayesian network
+#     B_0 represents the initial distribution. The Bayesian network B_{->},
+#     a 2-TBN, represents the process.
+#     """
+#
+#     def __init__(self, b0=None, two_tbn=None, transitions=None):
+#         """Create a dynamic Bayesian network.
+#
+#         Parameters
+#         ----------
+#         b0 : BayesianNetwork
+#             The network representing the initial distribution.
+#         two_tbn : BayesianNetwork
+#             The two-time-slice network representing the process.
+#         transitions : [(node, node_p),]
+#             A list of pairs, each of which represents one transition.
+#             See add_transition for more information.
+#         """
+#         super(DynamicBayesianNetwork, self).__init__()
+#         self._b0 = BayesianNetwork() if b0 is None else b0
+#         self._two_tbn = BayesianNetwork() if two_tbn is None else two_tbn
+#         self._transitions = []
+#         if transitions is not None:
+#             self.add_transitions(transitions)
+#
+#     @property
+#     def b0(self):
+#         """Get the Bayesian network B_0.
+#
+#         Returns
+#         -------
+#         BayesianNetwork
+#             The network representing the initial distribution.
+#         """
+#         return self._b0
+#
+#     @b0.setter
+#     def b0(self, bn):
+#         """Set the Bayesian network B_0.
+#
+#         Parameters
+#         ----------
+#         bn : BayesianNetwork
+#             The network representing the initial distribution.
+#         """
+#         self._b0 = bn
+#
+#     @property
+#     def two_tbn(self):
+#         """Get the 2-TBN B_{->}.
+#
+#         Returns
+#         -------
+#         BayesianNetwork
+#             The two-time-slice network representing the process.
+#         """
+#         return self._two_tbn
+#
+#     @two_tbn.setter
+#     def two_tbn(self, bn):
+#         """Set the 2-TBN B_{->}.
+#
+#         Parameters
+#         ----------
+#         bn : BayesianNetwork
+#             The two-time-slice network representing the process.
+#         """
+#         self._two_tbn = bn
+#
+#     def add_transition(self, node, node_p):
+#         """Add a transition connecting nodes when unrolling the network.
+#
+#         The transition is a directed edge from node X_i (`node`) to node X_i'
+#         (`node_p`).
+#
+#         Parameters
+#         ----------
+#         node : RandomNode, String
+#             The node X_i in the next time-slice.
+#
+#         node_p: RandomNode, String
+#             The corresponding node X_i' in the current time-slice.
+#
+#         Raises
+#         ------
+#         primo2.exceptions.StructureError
+#             If a node specified in the transition model cannot be found in the
+#             corresponding networks.
+#         """
+#         if node_p not in self._b0.get_all_nodes():
+#             raise exceptions.StructureError(
+#                 'Node "{}" is not found in B_0 network "{}".'.format(
+#                     node_p, self._b0.name))
+#         if node_p not in self._two_tbn.get_all_nodes():
+#             raise exceptions.StructureError(
+#                 'Node "{}" is not found in B_{->} network "{}".'.format(
+#                     node_p, self._two_tbn.name))
+#         if node not in self._two_tbn.get_all_nodes():
+#             raise exceptions.StructureError(
+#                 'Node "{}" is not found in B_{{->}} network "{}".'.format(
+#                     node, self._two_tbn.name))
+#         self._transitions.append((node, node_p))
+#
+#     def add_transitions(self, transitions):
+#         """Add multiple transitions connecting nodes when unrolling the network.
+#
+#         Parameters
+#         ----------
+#         transitions : [(node, node_p),]
+#             A list of pairs, each of which represents one transition.
+#             See add_transition for more information.
+#         """
+#         for transition in transitions:
+#             self.add_transition(transition[0], transition[1])
+#
+#     @property
+#     def transitions(self):
+#         """Get the transition model.
+#
+#         Returns
+#         -------
+#         [(node, node_p),]
+#             A list of pairs, each of which represents one transition.
+#             See add_transition for more information.
+#         """
+#         return self._transitions
+#
+#
+# class DecisionNetwork(object):
+#
+#     def __init__(self):
+#         self.node_lookup = {}
+#         self.partialOrdering = []
+#         self.random_nodes = []
+#         self.decision_nodes = []
+#         self.utility_nodes = []
+#
+#     def add_node(self, node):
+#         if isinstance(node, primo2.nodes.RandomNode):
+#             if node.name in self.node_lookup.keys():
+#                 raise Exception("Node name already exists in Bayesnet: " + node.name)
+#             if isinstance(node, primo2.nodes.DiscreteNode):
+#                 self.random_nodes.append(node)
+#             elif isinstance(node, primo2.nodes.UtilityNode):
+#                 self.utility_nodes.append(node)
+#             elif isinstance(node, primo2.nodes.DecisionNode):
+#                 self.decision_nodes.append(node)
+#             else:
+#                 raise Exception("Tried to add a node which the Bayesian Decision Network can not work with")
+#             self.node_lookup[node.name] = node
+#         else:
+#             raise Exception("Can only add 'Node' and its subclasses as nodes into the BayesianNetwork")
+#
+#     def add_edge(self, node_from, node_to):
+#
+#         self.node_lookup[node_to].add_parent(self.node_lookup[node_from])
+#
+#     def get_PartialOrdering(self):
+#         return self.partialOrdering
+#
+#     def set_PartialOrdering(self, partialOrder):
+#         self.partialOrdering = partialOrder
+#
+#     def get_all_nodes(self):
+#         '''Returns all RandomNodes'''
+#         return self.random_nodes
+#
+#     def get_all_decision_nodes(self):
+#         return self.decision_nodes
+#
+#     def get_all_utility_nodes(self):
+#         return self.utility_nodes
+
+
 class DynamicDecisionNetwork(object):
     """Class representing a the structure of a dynamic Decision network.
     This temporal relationship is modelled as a 2-time-slice Decision 
@@ -233,10 +411,27 @@ class DynamicDecisionNetwork(object):
                         """Connect copied nodes via inter edges like described in the two tdn"""
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
+                    for j in self._two_tdn._intra_edges:
+                        parent_node_name = j[0].name.split("_", 1)[0] + "_" + str(i)
+                        child_node_name = j[1].name.split("_", 1)[0] + "_" + str(i)
+                        """Connect copied nodes via inter edges like described in the two tdn"""
+                        unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
+                                              unrolled_net.node_lookup[child_node_name])
+                        print "child"
+                        print child_node_name
+                        print unrolled_net.node_lookup[child_node_name].parents
+                        # print self._d0.node_lookup[j[1].name.split("_", 1)[0] + "_" + str(0)].cpd
+                        unrolled_net.node_lookup[child_node_name].set_cpd(
+                            self._d0.node_lookup[j[1].name.split("_", 1)[0]
+                                                 + "_" + str(0)].cpd)
+                        print "copied"
 
                 else:
                     unrolled_net.copy_nodes_indexed(t_plus_1_slice, i)
-                    unrolled_net.copy_nodes_indexed(self._two_tdn.decision_nodes, i - 1)
+                    # in case we dont want the decisions to be copied for every new timeslice but only for every
+                    # two. Write this and leave the decisions node out of the timeslices in both d0 and two_tbn network:
+                    # unrolled_net.copy_nodes_indexed(self._two_tdn.decision_nodes, i - 1)
+
                     unrolled_net.copy_nodes_indexed(self._two_tdn.utility_nodes, i - 1)
 
                     for j in self._two_tdn._inter_edges:
@@ -246,10 +441,13 @@ class DynamicDecisionNetwork(object):
                                               unrolled_net.node_lookup[child_node_name])
 
                     for j in self._two_tdn._intra_edges:
-                        parent_node_name = j[0].name.split("_", 1)[0] + "_" + str(i - 1)
-                        child_node_name = j[1].name.split("_", 1)[0] + "_" + str(i - 1)
+                        parent_node_name = j[0].name.split("_", 1)[0] + "_" + str(i)
+                        child_node_name = j[1].name.split("_", 1)[0] + "_" + str(i)
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
+                        unrolled_net.node_lookup[child_node_name].set_cpd(
+                            self._d0.node_lookup[j[1].name.split("_", 1)[0]
+                                                 + "_" + str(0)].cpd)
 
             unrolled_net.set_partial_ordering_u(self._d0.get_partial_ordering(), length)
         else:
@@ -531,21 +729,25 @@ class DecisionNetwork(object):
 
         for i in range(0, length):
             for j in init_order:
-                print(type(j))
+                # print(type(j))
                 if isinstance(j, list):
-                    if isinstance(self.node_lookup[j[0]], DiscreteNode):
+                    if isinstance(self.node_lookup[j[0]], DiscreteNode) or \
+                            isinstance(self.node_lookup[j[0]], DecisionNode):
                         temp = [value.split("_", 1)[0] + "_" + str(i) for value in j]
                         self.partialOrdering.append(temp)
-                    elif i < length - 1 or i == 0:
-                        temp = [value.split("_", 1)[0] + "_" + str(i) for value in j]
-                        self.partialOrdering.append(temp)
+                    # Write this if decisions are over 2 timeslices
+                    # elif i < length - 1 or i == 0 or decisions:
+                    #     temp = [value.split("_", 1)[0] + "_" + str(i) for value in j]
+                    #     self.partialOrdering.append(temp)
                 elif isinstance(j, str):
-                    print j
-                    print(self.node_lookup)
-                    if isinstance(self.node_lookup[j], DiscreteNode):
+                    # print j
+                    # print(self.node_lookup)
+                    if isinstance(self.node_lookup[j], DiscreteNode) or \
+                            isinstance(self.node_lookup[j], DecisionNode):
                         self.partialOrdering.append(j.split("_", 1)[0] + "_" + str(i))
-                    elif i < length - 1 or i == 0:
-                        self.partialOrdering.append(j.split("_", 1)[0] + "_" + str(i))
+                    # Write this if decisions are over 2 timeslices
+                    # elif i < length - 1 or i == 0:
+                    #     self.partialOrdering.append(j.split("_", 1)[0] + "_" + str(i))
 
     def get_random_nodes(self):
         '''Returns all RandomNodes'''

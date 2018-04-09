@@ -545,6 +545,7 @@ class DecisionNode(RandomNode):
         self.parents = {}
         self.deterministic = True
         self._update_dimensions()
+        self.valid = False
 
     def rename(self, new_name):
         self.name = new_name
@@ -602,6 +603,25 @@ class DecisionNode(RandomNode):
     def fully_mixed(self):
         self.cpd = np.ones(self.cpd.shape)
         self.cpd /= len(self.values)
+
+    def set_cpd(self, cpd):
+        """
+            Allows to set the conditional probability density(table) of this
+            node directly. Will check that the dimensions of the given cpd
+            is comform to the current dependency structure but will not perform
+            any tests on the actual values.
+
+            Parameters
+            ----------
+            cpd : np.array
+                Table containing the conditional probabilities. Each variable
+                is represented by a dimension in the size of the number of its
+                outcomes.
+        """
+        if np.shape(self.cpd) != np.shape(cpd):
+            raise ValueError("The dimensions of the given cpd do not match the dependency structure of the node.")
+        self.cpd = np.copy(cpd)
+        self.valid = True
         
 
 if __name__ == "__main__":

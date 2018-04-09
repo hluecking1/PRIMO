@@ -154,8 +154,6 @@ PHD example 7.3 from Bayesian Reasoning and Machine Learning - Barber
 # print("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("education_0")))
 
 
-
-
 """
 PHD + Startup example 7.4 from Bayesian Reasoning and Machine Learning - Barber
 """
@@ -172,7 +170,6 @@ PHD + Startup example 7.4 from Bayesian Reasoning and Machine Learning - Barber
 # costsEducation = UtilityNode("costsE") #UC
 # costsStartUp = UtilityNode("costsS") #US
 # gains = UtilityNode("gains") #UB
-
 
 
 # #Add nodes to network. They can be treated the same
@@ -249,12 +246,8 @@ PHD + Startup example 7.4 from Bayesian Reasoning and Machine Learning - Barber
 # net2 = net.copy()
 
 
-
-
-
-#Define CPTs: (Needs to be done AFTER the structure is defined as that)
-#determines the table structure for the different nodes
-
+# Define CPTs: (Needs to be done AFTER the structure is defined as that)
+# determines the table structure for the different nodes
 
 
 # net.set_PartialOrdering([education, [income,nobel]])
@@ -277,7 +270,6 @@ PHD + Startup example 7.4 from Bayesian Reasoning and Machine Learning - Barber
 
 # costs_ = UtilityNode("costs_") #UC
 # gains_ = UtilityNode("gains_") #UB
-
 
 
 # d_net.two_tbn.add_node(education_)
@@ -320,80 +312,218 @@ PHD + Startup example 7.4 from Bayesian Reasoning and Machine Learning - Barber
 # gains_.set_utility(500001, parentValues={"gains"})
 
 
-
-
 # ve = VariableElimination(net)
 
 # print("Expected Utility for doing a Phd: {}".format(ve.expected_utility(decisions={"education":"do Phd"})))
 # print("Expected Utility for not doing a Phd: {}".format(ve.expected_utility(decisions={"education":"no Phd"})))
 # print("Optimal deciosn: ", ve.get_optimal_decisions(["education"]))
-#ccprint("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("education")))
+# ccprint("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("education")))
 
 # ve = VariableElimination(d_net._b0)
 # print("Get optimal decision for startup using max_sum Algorithm: {}".format(ve.max_sum("startup")))
 
 
-"""
-Fever Example 4.3.5 from Bayesian Artificial Intelligence - Korb Nicholson
-"""
+# """
+# Fever Example 4.3.5 from Bayesian Artificial Intelligence - Korb Nicholson
+# """
+#
+# d0 = d0_net()
+#
+# flu_0 = DiscreteNode("flu_0", values=["True", "False"])
+# fever_0 = DiscreteNode("fever_0", values=["True", "False"])
+# therm_0 = DiscreteNode("therm_0", values=["True", "False"])
+# take_aspirin_0 = DecisionNode("take_aspirin_0", decisions=["Yes", "No"])
+# fever_later_0 = DiscreteNode("fever_later_0", values=["True", "False"])
+# reaction_0 = DiscreteNode("reaction_0", values=["Yes", "No"])
+# utility_0 = UtilityNode("utility_0")
+#
+# d0.add_nodes([flu_0, fever_0, therm_0, take_aspirin_0, fever_later_0, reaction_0, utility_0])
+#
+# d0.add_edge(flu_0, fever_0)
+# d0.add_edge(fever_0, therm_0)
+# d0.add_edge(fever_0, fever_later_0)
+# d0.add_edge(fever_later_0, utility_0)
+# d0.add_edge(take_aspirin_0, reaction_0)
+# d0.add_edge(take_aspirin_0, fever_later_0)
+# d0.add_edge(reaction_0, utility_0)
+#
+# flu_0.set_probability("True", 0.05)
+# flu_0.set_probability("False", 0.95)
+#
+# fever_0.set_probability("True", 0.95, parentValues={"flu_0": "True"})
+# fever_0.set_probability("True", 0.02, parentValues={"flu_0": "False"})
+# fever_0.set_probability("False", 0.05, parentValues={"flu_0": "True"})
+# fever_0.set_probability("False", 0.98, parentValues={"flu_0": "False"})
+#
+# therm_0.set_probability("True", 0.90, parentValues={"fever_0": "True"})
+# therm_0.set_probability("True", 0.05, parentValues={"fever_0": "False"})
+# therm_0.set_probability("False", 0.10, parentValues={"fever_0": "True"})
+# therm_0.set_probability("False", 0.95, parentValues={"fever_0": "False"})
+#
+# fever_later_0.set_probability("True", 0.05, parentValues={"fever_0": "True", "take_aspirin_0": "Yes"})
+# fever_later_0.set_probability("True", 0.90, parentValues={"fever_0": "True", "take_aspirin_0": "No"})
+# fever_later_0.set_probability("True", 0.01, parentValues={"fever_0": "False", "take_aspirin_0": "Yes"})
+# fever_later_0.set_probability("True", 0.02, parentValues={"fever_0": "False", "take_aspirin_0": "No"})
+# fever_later_0.set_probability("False", 0.95, parentValues={"fever_0": "True", "take_aspirin_0": "Yes"})
+# fever_later_0.set_probability("False", 0.10, parentValues={"fever_0": "True", "take_aspirin_0": "No"})
+# fever_later_0.set_probability("False", 0.99, parentValues={"fever_0": "False", "take_aspirin_0": "Yes"})
+# fever_later_0.set_probability("False", 0.98, parentValues={"fever_0": "False", "take_aspirin_0": "No"})
+#
+# reaction_0.set_probability("Yes", 0.05, parentValues={"take_aspirin_0": "Yes"})
+# reaction_0.set_probability("Yes", 0.00, parentValues={"take_aspirin_0": "No"})
+# reaction_0.set_probability("No", 0.95, parentValues={"take_aspirin_0": "Yes"})
+# reaction_0.set_probability("No", 1.0, parentValues={"take_aspirin_0": "No"})
+#
+# utility_0.set_utility(-50, {"fever_later_0": "True", "reaction_0": "Yes"})
+# utility_0.set_utility(-10, {"fever_later_0": "True", "reaction_0": "No"})
+# utility_0.set_utility(-30, {"fever_later_0": "False", "reaction_0": "Yes"})
+# utility_0.set_utility(50,  {"fever_later_0": "False", "reaction_0": "No"})
+#
+# d0.set_partial_ordering([["flu_0", "fever_0", "therm_0"], "take_aspirin_0", ["fever_later_0", "reaction_0"]])
+#
+# ve = VariableElimination(d0)
+#
+# print("Expected Utility for Taking Aspirin: {}".format(ve.expected_utility(decisions={"take_aspirin_0": "Yes"})))
+# print("Expected Utility for not Taking Aspirin: {}".format(ve.expected_utility(decisions={"take_aspirin_0": "No"})))
+# print("Optimal decision: ", ve.get_optimal_decisions(["take_aspirin_0"]))
+# print("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("take_aspirin_0")))
+
+
+# L2Tor example
 
 d0 = d0_net()
 
-flu_0 = DiscreteNode("flu_0", values=["True", "False"])
-fever_0 = DiscreteNode("fever_0", values=["True", "False"])
-therm_0 = DiscreteNode("therm_0", values=["True", "False"])
-take_aspirin_0 = DecisionNode("take_aspirin_0", decisions=["Yes", "No"])
-fever_later_0 = DiscreteNode("fever_later_0", values=["True", "False"])
-reaction_0 = DiscreteNode("reaction_0", values=["Yes", "No"])
-utility_0 = UtilityNode("utility_0")
+skill_0 = DiscreteNode("skill_0", values=[0, 1, 2, 3, 4, 5])
+action_0 = DecisionNode("action_0", decisions=["1", "2", "3", "4"])
+observation_0 = DiscreteNode("observation_0", values=["+O", "-O"])
 
-d0.add_nodes([flu_0, fever_0, therm_0, take_aspirin_0, fever_later_0, reaction_0, utility_0])
+d0.add_nodes([skill_0, action_0, observation_0])
+d0.add_edge(skill_0, observation_0)
+d0.add_edge(skill_0, action_0)
+d0.add_edge(action_0, observation_0)
 
-d0.add_edge(flu_0, fever_0)
-d0.add_edge(fever_0, therm_0)
-d0.add_edge(fever_0, fever_later_0)
-d0.add_edge(fever_later_0, utility_0)
-d0.add_edge(take_aspirin_0, reaction_0)
-d0.add_edge(take_aspirin_0, fever_later_0)
-d0.add_edge(reaction_0, utility_0)
+d0.set_zero_timeslice([skill_0, observation_0, action_0])
 
-flu_0.set_probability("True", 0.05)
-flu_0.set_probability("False", 0.95)
+d0.set_partial_ordering(["skill_0", "action_0", "observation_0"])
 
-fever_0.set_probability("True", 0.95, parentValues={"flu_0": "True"})
-fever_0.set_probability("True", 0.02, parentValues={"flu_0": "False"})
-fever_0.set_probability("False", 0.05, parentValues={"flu_0": "True"})
-fever_0.set_probability("False", 0.98, parentValues={"flu_0": "False"})
+skill_0.set_cpd([1.0 / 6, 1.0 / 6, 1.0 / 6, 1.0 / 6, 1.0 / 6, 1.0 / 6])
 
-therm_0.set_probability("True", 0.90, parentValues={"fever_0": "True"})
-therm_0.set_probability("True", 0.05, parentValues={"fever_0": "False"})
-therm_0.set_probability("False", 0.10, parentValues={"fever_0": "True"})
-therm_0.set_probability("False", 0.95, parentValues={"fever_0": "False"})
+action_0.set_cpd([[0.40, 0.30, 0.20, 0.15, 0.10, 0.05],
+                  [0.30, 0.35, 0.40, 0.25, 0.25, 0.25],
+                  [0.25, 0.25, 0.25, 0.40, 0.35, 0.30],
+                  [0.05, 0.10, 0.15, 0.20, 0.30, 0.40]])
 
-fever_later_0.set_probability("True", 0.05, parentValues={"fever_0": "True", "take_aspirin_0": "Yes"})
-fever_later_0.set_probability("True", 0.90, parentValues={"fever_0": "True", "take_aspirin_0": "No"})
-fever_later_0.set_probability("True", 0.01, parentValues={"fever_0": "False", "take_aspirin_0": "Yes"})
-fever_later_0.set_probability("True", 0.02, parentValues={"fever_0": "False", "take_aspirin_0": "No"})
-fever_later_0.set_probability("False", 0.95, parentValues={"fever_0": "True", "take_aspirin_0": "Yes"})
-fever_later_0.set_probability("False", 0.10, parentValues={"fever_0": "True", "take_aspirin_0": "No"})
-fever_later_0.set_probability("False", 0.99, parentValues={"fever_0": "False", "take_aspirin_0": "Yes"})
-fever_later_0.set_probability("False", 0.98, parentValues={"fever_0": "False", "take_aspirin_0": "No"})
+observation_0.set_cpd([[[0.50, 0.3, 0.25, 0.15],
+                        [0.55, 0.40, 0.30, 0.20],
+                        [0.65, 0.55, 0.40, 0.30],
+                        [0.75, 0.65, 0.50, 0.40],
+                        [0.85, 0.75, 0.60, 0.50],
+                        [0.95, 0.85, 0.70, 0.60]],
+                       [[0.50, 0.67, 0.75, 0.85],
+                        [0.45, 0.60, 0.70, 0.80],
+                        [0.35, 0.45, 0.60, 0.70],
+                        [0.25, 0.35, 0.50, 0.60],
+                        [0.15, 0.25, 0.40, 0.50],
+                        [0.05, 0.15, 0.30, 0.40]]])
 
-reaction_0.set_probability("Yes", 0.05, parentValues={"take_aspirin_0": "Yes"})
-reaction_0.set_probability("Yes", 0.00, parentValues={"take_aspirin_0": "No"})
-reaction_0.set_probability("No", 0.95, parentValues={"take_aspirin_0": "Yes"})
-reaction_0.set_probability("No", 1.0, parentValues={"take_aspirin_0": "No"})
+# print observation_0.get_probability("-O", {"skill_0": 4, "action_0": "1"})
 
-utility_0.set_utility(-50, {"fever_later_0": "True", "reaction_0": "Yes"})
-utility_0.set_utility(-10, {"fever_later_0": "True", "reaction_0": "No"})
-utility_0.set_utility(-30, {"fever_later_0": "False", "reaction_0": "Yes"})
-utility_0.set_utility(50,  {"fever_later_0": "False", "reaction_0": "No"})
+# print observation_0.cpd
+#
+# print skill_0.cpd
+#
+# print action_0.cpd
 
-d0.set_partial_ordering([["flu_0", "fever_0", "therm_0"], "take_aspirin_0", ["fever_later_0", "reaction_0"]])
+two_tdn = Two_TDN()
+
+skill_t = DiscreteNode("skill_t", values=[0, 1, 2, 3, 4, 5])
+
+action_t = DecisionNode("action_t", decisions=["1", "2", "3", "4"])
+observation_t = DiscreteNode("observation_t", values=["+O", "-O"])
+
+skill_t_plus_one = DiscreteNode("skill_t_plus_one", values=[0, 1, 2, 3, 4, 5])
+
+action_t_plus_one = DecisionNode("action_t_plus_one", decisions=["1", "2", "3", "4"])
+observation_t_plus_one = DiscreteNode("observation_t_plus_one", values=["+O", "-O"])
+
+two_tdn.add_nodes([skill_t, action_t, observation_t, skill_t_plus_one, action_t_plus_one, observation_t_plus_one])
+two_tdn.set_t_timeslice([skill_t, action_t, observation_t])
+two_tdn.set_t_plus_one_timeslice([skill_t_plus_one, action_t_plus_one, observation_t_plus_one])
+
+two_tdn.add_intra_edge(skill_t, action_t)
+two_tdn.add_intra_edge(skill_t, observation_t)
+two_tdn.add_intra_edge(action_t, observation_t)
+
+two_tdn.add_inter_edge(skill_t, skill_t_plus_one)
+two_tdn.add_inter_edge(action_t, skill_t_plus_one)
+two_tdn.add_inter_edge(observation_t, skill_t_plus_one)
+
+DDN = DynamicDecisionNetwork(d0, two_tdn)
+
+new_net = DDN.unroll(2)
+
+# print new_net.node_lookup["observation_1"].cpd
 
 ve = VariableElimination(d0)
+# print("Optimal decision: ", ve.get_optimal_decisions(["action_0"]))
+# print("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("action_0")))
 
-print("Expected Utility for Taking Aspirin: {}".format(ve.expected_utility(decisions={"take_aspirin_0": "Yes"})))
-print("Expected Utility for not Taking Aspirin: {}".format(ve.expected_utility(decisions={"take_aspirin_0": "No"})))
-print("Optimal decision: ", ve.get_optimal_decisions(["take_aspirin_0"]))
-print("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("take_aspirin_0")))
+# self._t_s = {'+O': {"1": {0: {0: 0.60, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.25, 1: 0.70, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.15, 1: 0.20, 2: 0.80, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           3: {0: 0.00, 1: 0.10, 2: 0.15, 3: 0.85, 4: 0.00, 5: 0.00},
+#                           4: {0: 0.00, 1: 0.00, 2: 0.05, 3: 0.10, 4: 0.90, 5: 0.00},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.05, 4: 0.10, 5: 1.00}
+#                           },
+#                     "2": {0: {0: 0.55, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.35, 1: 0.60, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.10, 1: 0.30, 2: 0.70, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           3: {0: 0.00, 1: 0.10, 2: 0.20, 3: 0.70, 4: 0.00, 5: 0.00},
+#                           4: {0: 0.00, 1: 0.00, 2: 0.10, 3: 0.25, 4: 0.75, 5: 0.00},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.05, 4: 0.25, 5: 1.00}
+#                           },
+#                     "3": {0: {0: 0.40, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.40, 1: 0.40, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.20, 1: 0.40, 2: 0.40, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           3: {0: 0.00, 1: 0.20, 2: 0.40, 3: 0.50, 4: 0.00, 5: 0.00},
+#                           4: {0: 0.00, 1: 0.00, 2: 0.20, 3: 0.40, 4: 0.60, 5: 0.00},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.10, 4: 0.40, 5: 1.00}
+#                           },
+#                     "4": {0: {0: 0.30, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.45, 1: 0.30, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.20, 1: 0.45, 2: 0.30, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           3: {0: 0.05, 1: 0.20, 2: 0.45, 3: 0.30, 4: 0.00, 5: 0.00},
+#                           4: {0: 0.00, 1: 0.05, 2: 0.20, 3: 0.45, 4: 0.40, 5: 0.00},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.05, 3: 0.25, 4: 0.60, 5: 1.00}
+#                           }
+#                     },
+#              '-O': {"1": {0: {0: 1.00, 1: 0.10, 2: 0.05, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.00, 1: 0.90, 2: 0.10, 3: 0.15, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.00, 1: 0.00, 2: 0.85, 3: 0.25, 4: 0.20, 5: 0.00},
+#                           3: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.60, 4: 0.30, 5: 0.25},
+#                           4: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.50, 5: 0.35},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.40}
+#                           },
+#                     "2": {0: {0: 1.00, 1: 0.25, 2: 0.05, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.00, 1: 0.75, 2: 0.25, 3: 0.10, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.00, 1: 0.00, 2: 0.70, 3: 0.25, 4: 0.10, 5: 0.00},
+#                           3: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.65, 4: 0.30, 5: 0.10},
+#                           4: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.60, 5: 0.35},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.55}
+#                           },
+#                     "3": {0: {0: 1.00, 1: 0.20, 2: 0.20, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.00, 1: 0.80, 2: 0.40, 3: 0.20, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.00, 1: 0.00, 2: 0.40, 3: 0.40, 4: 0.20, 5: 0.00},
+#                           3: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.40, 4: 0.40, 5: 0.20},
+#                           4: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.40, 5: 0.40},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.40}
+#                           },
+#                     "4": {0: {0: 1.00, 1: 0.40, 2: 0.15, 3: 0.00, 4: 0.00, 5: 0.00},
+#                           1: {0: 0.00, 1: 0.60, 2: 0.35, 3: 0.15, 4: 0.00, 5: 0.00},
+#                           2: {0: 0.00, 1: 0.00, 2: 0.50, 3: 0.35, 4: 0.15, 5: 0.00},
+#                           3: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.50, 4: 0.35, 5: 0.15},
+#                           4: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.50, 5: 0.35},
+#                           5: {0: 0.00, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.50}
+#                           }
+#                     }
+#              }
