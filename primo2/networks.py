@@ -414,17 +414,27 @@ class DynamicDecisionNetwork(object):
                     for j in self._two_tdn._intra_edges:
                         parent_node_name = j[0].name.split("_", 1)[0] + "_" + str(i)
                         child_node_name = j[1].name.split("_", 1)[0] + "_" + str(i)
-                        """Connect copied nodes via inter edges like described in the two tdn"""
+                        """Connect copied nodes via intra edges like described in the two tdn"""
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
-                        print "child"
+                        print "Set CPD for:"
                         print child_node_name
+                        print "Which has the initial CPD:"
+                        print unrolled_net.node_lookup[child_node_name].cpd
+                        print "And his parents are:"
                         print unrolled_net.node_lookup[child_node_name].parents
-                        # print self._d0.node_lookup[j[1].name.split("_", 1)[0] + "_" + str(0)].cpd
+                        print "Setting CPD to the following: "
+                        print self._d0.node_lookup[j[1].name.split("_", 1)[0] + "_" + str(0)].cpd
+                        # unrolled_net.node_lookup[child_node_name].set_cpd(
+                        #     self._d0.node_lookup[j[1].name.split("_", 1)[0]
+                        #                          + "_" + str(0)].cpd)
+                        print "copied"
+                    for j in self._two_tdn._intra_edges:
+                        child_node_name = j[1].name.split("_", 1)[0] + "_" + str(i)
+
                         unrolled_net.node_lookup[child_node_name].set_cpd(
                             self._d0.node_lookup[j[1].name.split("_", 1)[0]
                                                  + "_" + str(0)].cpd)
-                        print "copied"
 
                 else:
                     unrolled_net.copy_nodes_indexed(t_plus_1_slice, i)
@@ -445,6 +455,10 @@ class DynamicDecisionNetwork(object):
                         child_node_name = j[1].name.split("_", 1)[0] + "_" + str(i)
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
+
+                    for j in self._two_tdn._intra_edges:
+                        child_node_name = j[1].name.split("_", 1)[0] + "_" + str(i)
+
                         unrolled_net.node_lookup[child_node_name].set_cpd(
                             self._d0.node_lookup[j[1].name.split("_", 1)[0]
                                                  + "_" + str(0)].cpd)

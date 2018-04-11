@@ -460,9 +460,10 @@ two_tdn.add_inter_edge(observation_t, skill_t_plus_one)
 
 DDN = DynamicDecisionNetwork(d0, two_tdn)
 
-new_net = DDN.unroll(2)
+new_net = DDN.unroll(5)
 
-# print new_net.node_lookup["observation_1"].cpd
+print new_net.node_lookup["observation_3"].cpd
+print new_net.get_partial_ordering()
 
 ve = VariableElimination(d0)
 # print("Optimal decision: ", ve.get_optimal_decisions(["action_0"]))
