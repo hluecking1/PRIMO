@@ -30,16 +30,19 @@ class RandomNode(object):
         Only subclasses of this should actually be used in a network as this
         is underspecied for any inference algorithms.
     """
-    
+
     def __init__(self, nodename):
         self.name = nodename
         self.cpd = 1
         self.meta = []
-        
+
     def set_cpd(self, cpd):
         raise NotImplementedError("Called unimplemented method.")
-        
-        
+
+    # Renames a node to the scheme: "Node_index" and returns it
+    def get_indexed_node(self, index):
+        return self.name.split("_", 1)[0] + "_" + str(index)
+
     def __eq__(self, other):
         """
             Two random nodes are considered to be identical if they have the
@@ -51,10 +54,10 @@ class RandomNode(object):
             return other.name == self.name
         except AttributeError:
             return other == self.name
-        
+
     def __ne__(self, other):
         return not self.__eq__(other)
-        
+
     def __hash__(self):
         """
             The hash of a random node is the same as the hash of its name.
@@ -62,15 +65,16 @@ class RandomNode(object):
             instantiation or their name.
         """
         return hash(self.name)
-        
+
     def __str__(self):
         return self.name
 
     def __repr__(self):
-        return self.name       
+        return self.name
+
 
 class DiscreteNode(RandomNode):
-    
+
     def __init__(self, nodename, values=("True", "False")):
         """
             Creates a new discrete node with the given name and outcomes.
@@ -82,16 +86,14 @@ class DiscreteNode(RandomNode):
             vales: [String,], optional
                 List of outcome values this discrete node has.
         """
-        super(DiscreteNode,self).__init__(nodename)
-        self.values = list(values) #Consider copying this if for some reason something other than strings are used in there
-        self.parents = dict() #Consider removing this
+        super(DiscreteNode, self).__init__(nodename)
+        self.values = list(
+            values)  # Consider copying this if for some reason something other than strings are used in there
+        self.parents = dict()  # Consider removing this
         self.parentOrder = []
         self.valid = False
         self._update_dimensions()
 
-    def rename(self, new_name):
-        self.name = new_name
-        
     def add_parent(self, parentNode):
         """
             Adds the given node as a parent/cause node of this node. Will invalidate the
@@ -105,7 +107,7 @@ class DiscreteNode(RandomNode):
             parentNode: RandomNode
                 The new parent/cause node
         """
-        
+
         self.parents[parentNode.name] = parentNode
         self.parentOrder.append(parentNode.name)
         self._update_dimensions()
@@ -127,9 +129,8 @@ class DiscreteNode(RandomNode):
                 List of the new value names.
         """
         self.values = list(new_values)
-        self._update_dimensions()        
-        
-        
+        self._update_dimensions()
+
     def _update_dimensions(self):
         """
             Private helper function to update the dimensions of the cpd.
@@ -140,7 +141,7 @@ class DiscreteNode(RandomNode):
             dimensions.append(len(self.parents[parentName].values))
         self.cpd = np.zeros(dimensions)
         self.valid = False
-        
+
     def remove_parent(self, parentNode):
         """
             Removes the given parent/cause node from this node.
@@ -156,7 +157,7 @@ class DiscreteNode(RandomNode):
         del self.parents[parentNode]
         self.parentOrder.remove(parentNode.name)
         self._update_dimensions()
-        
+
     def set_cpd(self, cpd):
         """
             Allows to set the conditional probability density(table) of this
@@ -175,7 +176,7 @@ class DiscreteNode(RandomNode):
             raise ValueError("The dimensions of the given cpd do not match the dependency structure of the node.")
         self.cpd = np.copy(cpd)
         self.valid = True
-        
+
     def set_probability(self, valueName, prob, parentValues=None):
         """
             Function that allows to set parts of the cpt of this variable.
@@ -205,10 +206,10 @@ class DiscreteNode(RandomNode):
             index = [self.values.index(valueName)] if self.values else []
         except ValueError:
             raise ValueError("This node as no value {}.".format(valueName))
-        
+
         if not parentValues:
             parentValues = {}
-        
+
         for parentName in self.parentOrder:
             if parentName in parentValues:
                 try:
@@ -217,9 +218,9 @@ class DiscreteNode(RandomNode):
                     raise ValueError("Parent {} does not have values {}.".format(parentName, parentValues[parentName]))
             else:
                 index.append(slice(len(self.parents[parentName].values)))
-                
+
         self.cpd[tuple(index)] = prob
-        
+
     def get_probability(self, value, parentValues=None):
         """
             Function to return the probability(ies) for a given value of this
@@ -251,31 +252,37 @@ class DiscreteNode(RandomNode):
             index = [[self.values.index(value)]] if self.values else []
         except ValueError:
             raise ValueError("This node as no value {}.".format(value))
-        
+
         if not parentValues:
             parentValues = {}
-        
+
         for parentName in self.parentOrder:
             if parentName in parentValues:
                 if isinstance(parentValues[parentName], list):
                     try:
                         index.append([self.parents[parentName].values.index(v) for v in parentValues[parentName]])
                     except ValueError:
-                        raise ValueError("There is no conditional probability for parent {}, values {} in node {}.".format(parentName, parentValues[parentName], self.name))
+                        raise ValueError(
+                            "There is no conditional probability for parent {}, values {} in node {}.".format(
+                                parentName, parentValues[parentName], self.name))
                 else:
                     try:
                         index.append([self.parents[parentName].values.index(parentValues[parentName])])
                     except ValueError:
-                        raise ValueError("There is no conditional probability for parent {}, value {} in node {}.".format(parentName, parentValues[parentName], self.name))
+                        raise ValueError(
+                            "There is no conditional probability for parent {}, value {} in node {}.".format(parentName,
+                                                                                                             parentValues[
+                                                                                                                 parentName],
+                                                                                                             self.name))
             else:
                 index.append(range(len(self.parents[parentName].values)))
-                
+
         # use np.ix_ to construct the appropriate index array!
         index = np.ix_(*index)
         tmp = self.cpd[index]
         res = np.squeeze(tmp)
-        return res #np.squeeze(np.copy(self.cpd[np.ix_(*index]))
-        
+        return res  # np.squeeze(np.copy(self.cpd[np.ix_(*index]))
+
     def _get_single_probability(self, value, parentValues=None):
         """
             Fast-path function to return the probability for a given value of this
@@ -304,19 +311,24 @@ class DiscreteNode(RandomNode):
             index = [self.values.index(value)] if self.values else []
         except ValueError:
             raise ValueError("This node as no value {}.".format(value))
-            
+
         if not parentValues:
             parentValues = {}
-            
+
         for parentName in self.parentOrder:
             try:
                 index.append(self.parents[parentName].values.index(parentValues[parentName]))
             except KeyError:
-                raise KeyError("parentValues need to specify a value for parent {} of node: {}.".format(parentName, self.name))
+                raise KeyError(
+                    "parentValues need to specify a value for parent {} of node: {}.".format(parentName, self.name))
             except ValueError:
-                raise ValueError("There is no conditional probability for parent {}, value {} in node {}.".format(parentName, parentValues[parentName], self.name))
+                raise ValueError(
+                    "There is no conditional probability for parent {}, value {} in node {}.".format(parentName,
+                                                                                                     parentValues[
+                                                                                                         parentName],
+                                                                                                     self.name))
         return self.cpd[tuple(index)]
-        
+
     def get_markov_prob(self, outcome, children, state, forward=False):
         """
             Computes the markov probability of the given outcome of this random variable,
@@ -350,7 +362,7 @@ class DiscreteNode(RandomNode):
             for child in children:
                 prob *= child._get_single_probability(state[child.name], state)
         return prob
-        
+
     def sample_value(self, currentState, children, forward=False):
         """
             Returns a value drawn from the probability density given by this node
@@ -377,21 +389,21 @@ class DiscreteNode(RandomNode):
                 String
                 Name of the value this DiscreteNode has most likely adopted.
         """
-        #Compute probabilities of possible outcomes
+        # Compute probabilities of possible outcomes
         weights = []
         for outcome in self.values:
             adaptedState = dict(currentState)
             adaptedState[self] = outcome
             weights.append(self.get_markov_prob(outcome, children, adaptedState, forward))
-        
-        #Perform roulette-wheel-sampling:
-        rndVal = random.random()* sum(weights)
+
+        # Perform roulette-wheel-sampling:
+        rndVal = random.random() * sum(weights)
         s = 0
         for i in range(len(weights)):
             s += weights[i]
             if s >= rndVal:
                 return self.values[i]
-        
+
     def sample_local(self, currentValue):
         """
             Returns a randomly chosen possible outcome of this node. 
@@ -417,16 +429,13 @@ class UtilityNode(RandomNode):
             1. A DiscreteNode does not have values itself
             2. The CPD does not represent probabilities but rather utilities!
     """
-    
+
     def __init__(self, nodeName):
-        super(UtilityNode,self).__init__(nodeName)
+        super(UtilityNode, self).__init__(nodeName)
         self.parents = {}
         self.parentOrder = []
-        self.utilities = self.cpd # Use different name for cpd
+        self.utilities = self.cpd  # Use different name for cpd
         self.valid = False
-
-    def rename(self, new_name):
-        self.name = new_name
 
     def add_parent(self, parentNode):
         """
@@ -445,7 +454,7 @@ class UtilityNode(RandomNode):
         self.parents[parentNode.name] = parentNode
         self.parentOrder.append(parentNode.name)
         self._update_dimensions()
-        
+
     def _update_dimensions(self):
         """
             Private helper function to update the dimensions of the cpd.
@@ -456,7 +465,7 @@ class UtilityNode(RandomNode):
             dimensions.append(len(self.parents[parentName].values))
         self.cpd = np.zeros(dimensions)
         self.valid = False
-        
+
     def get_utility(self, parentValues):
         """
             Returns the utilities for a specific parent outcome.
@@ -476,11 +485,15 @@ class UtilityNode(RandomNode):
             try:
                 index.append(self.parents[parentName].values.index(parentValues[parentName]))
             except KeyError:
-                raise KeyError("parentValues need to specify a value for parent {} of node: {}.".format(parentName, self.name))
+                raise KeyError(
+                    "parentValues need to specify a value for parent {} of node: {}.".format(parentName, self.name))
             except ValueError:
-                raise ValueError("There is no utility for parent {}, value {} in node {}.".format(parentName, parentValues[parentName], self.name))
+                raise ValueError("There is no utility for parent {}, value {} in node {}.".format(parentName,
+                                                                                                  parentValues[
+                                                                                                      parentName],
+                                                                                                  self.name))
         return self.cpd[tuple(index)]
-    
+
     def set_utilities(self, utilities):
         """
             Allows to set the utilities directly as a utility table.
@@ -500,7 +513,7 @@ class UtilityNode(RandomNode):
                              "match the dependency structure of the node.")
         self.cpd = np.copy(utilities)
         self.valid = True
-        
+
     def set_utility(self, utility, parentValues):
         """
             Allows to specify the utility for the specified parent value
@@ -524,8 +537,9 @@ class UtilityNode(RandomNode):
                     raise ValueError("Parent {} does not have values {}.".format(parentName, parentValues[parentName]))
             else:
                 index.append(slice(len(self.parents[parentName].values)))
-                
+
         self.cpd[tuple(index)] = utility
+
 
 class DecisionNode(RandomNode):
     """
@@ -534,10 +548,9 @@ class DecisionNode(RandomNode):
         In most single-agent cases, this will be deterministic mapping to exactly
         1 outcome.
     """
-    
-    
+
     def __init__(self, nodeName, decisions=["Yes", "No"]):
-        super(DecisionNode,self).__init__(nodeName)
+        super(DecisionNode, self).__init__(nodeName)
         self.name = nodeName
         self.values = list(decisions)
         self.state = None
@@ -546,9 +559,6 @@ class DecisionNode(RandomNode):
         self.deterministic = True
         self._update_dimensions()
         self.valid = False
-
-    def rename(self, new_name):
-        self.name = new_name
 
     def add_parent(self, parentNode):
         """
@@ -563,7 +573,7 @@ class DecisionNode(RandomNode):
             parentNode: RandomNode
                 The new parent/cause node
         """
-        
+
         self.parents[parentNode.name] = parentNode
         self.parentOrder.append(parentNode.name)
         self._update_dimensions()
@@ -578,7 +588,7 @@ class DecisionNode(RandomNode):
             dimensions.append(len(self.parents[parentName].values))
         self.cpd = np.zeros(dimensions)
         self.valid = False
-        
+
     def set_decision(self, decision):
         """
             Sets the state of this decisionNode to the given decision.
@@ -597,9 +607,9 @@ class DecisionNode(RandomNode):
             index = [self.values.index(decision)] if self.values else []
         except ValueError:
             raise ValueError("This node as no value {}.".format(decision))
-                
+
         self.cpd[tuple(index)] = 1
-        
+
     def fully_mixed(self):
         self.cpd = np.ones(self.cpd.shape)
         self.cpd /= len(self.values)
@@ -622,13 +632,11 @@ class DecisionNode(RandomNode):
             raise ValueError("The dimensions of the given cpd do not match the dependency structure of the node.")
         self.cpd = np.copy(cpd)
         self.valid = True
-        
+
 
 if __name__ == "__main__":
-
     costs = UtilityNode("costs")
     costs_ = UtilityNode("costs_")
     costs_.add_parent(costs)
 
     print(costs_.utilities)
-    

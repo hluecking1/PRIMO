@@ -296,5 +296,4 @@ class VariableElimination(object):
                 current = current.marginalize(i)
             elif i != decisionNode:
                 current = current.maximize(i)
-
         return [current.values.values()[0][np.argmax(current.potentials)], max(current.potentials)]
