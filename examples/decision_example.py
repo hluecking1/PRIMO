@@ -499,9 +499,9 @@ new_net = DDN.unroll(2)
 print new_net.node_lookup["observation_1"].cpd
 print new_net.get_partial_ordering()
 
-# ve = VariableElimination(new_net)
+ve = VariableElimination(new_net)
 # print("Optimal decision: ", ve.get_optimal_decisions(["action_0"]))
-# print("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("action_0")))
+print("Get optimal decision for education using max_sum Algorithm: {}".format(ve.max_sum("action_1")))
 
 # new = {'+O': {"1": {0: {0: 0.60, 1: 0.00, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},
 #                     1: {0: 0.25, 1: 0.70, 2: 0.00, 3: 0.00, 4: 0.00, 5: 0.00},

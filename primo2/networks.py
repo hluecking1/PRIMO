@@ -401,33 +401,34 @@ class DynamicDecisionNetwork(object):
                 if i == 0:
                     unrolled_net.add_nodes(self._d0.timeslice[0] + self._d0.utility_nodes)
                 elif i == 1:
+                    children = []
                     """copy nodes from the two_tdn Network into unrolled_net"""
                     unrolled_net.copy_nodes_indexed(self._two_tdn.timeslice['t_plus_1'], i)
-                    for j in self._two_tdn.get_inter_edges():
-                        parent_node_name = j[0].get_indexed_node(i - 1)
-                        child_node_name = j[1].get_indexed_node(i)
+                    for inter_pair in self._two_tdn.get_inter_edges():
+                        parent_node_name = inter_pair[0].get_indexed_node(i - 1)
+                        child_node_name = inter_pair[1].get_indexed_node(i)
                         """Connect copied nodes via inter edges like described in the two tdn"""
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
                     "Copy the CPD's describing the transition probability (defined by the two_tdn) into the new net"
-                    for j in self._two_tdn.transitions.keys():
-                        node_name = j.get_indexed_node(i)
+                    for current_transition in self._two_tdn.transitions.keys():
+                        node_name = current_transition.get_indexed_node(i)
 
-                        unrolled_net.node_lookup[node_name].set_cpd(self._two_tdn.get_transition_probability(j))
-                    for j in self._two_tdn.get_intra_edges():
-                        parent_node_name = j[0].get_indexed_node(i)
-                        child_node_name = j[1].get_indexed_node(i)
+                        unrolled_net.node_lookup[node_name].set_cpd(self._two_tdn.get_transition_probability(current_transition))
+                    for intra_pair in self._two_tdn.get_intra_edges():
+                        parent_node_name = intra_pair[0].get_indexed_node(i)
+                        child_node_name = intra_pair[1].get_indexed_node(i)
                         """Connect copied nodes via intra edges like described in the two tdn"""
+                        children.append(child_node_name)
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
                     "Copy the CPD's of the intra connections to the next timeslice"
-                    for j in self._two_tdn.get_intra_edges():
-                        child_node_name = j[1].get_indexed_node(i)
-
-                        unrolled_net.node_lookup[child_node_name].set_cpd(
-                            self._d0.node_lookup[j[1].get_indexed_node(0)].cpd)
+                    for intra_child in children:
+                        unrolled_net.node_lookup[intra_child].set_cpd(
+                            self._d0.node_lookup[intra_child.split("_", 1)[0] + "_" + str(0)].cpd)
 
                 else:
+                    children = []
                     unrolled_net.copy_nodes_indexed(self._two_tdn.timeslice['t_plus_1'], i)
                     # in case we dont want the decisions to be copied for every new timeslice but only for every
                     # two. Write this and leave the decisions node out of the timeslices in both d0 and two_tbn network:
@@ -435,28 +436,27 @@ class DynamicDecisionNetwork(object):
 
                     unrolled_net.copy_nodes_indexed(self._two_tdn.utility_nodes, i - 1)
 
-                    for j in self._two_tdn.get_inter_edges():
-                        parent_node_name = j[0].get_indexed_node(i - 1)
-                        child_node_name = j[1].get_indexed_node(i)
+                    for inter_pair in self._two_tdn.get_inter_edges():
+                        parent_node_name = inter_pair[0].get_indexed_node(i - 1)
+                        child_node_name = inter_pair[1].get_indexed_node(i)
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
 
-                    for j in self._two_tdn.transitions.keys():
-                        node_name = j.get_indexed_node(i)
+                    for current_transition in self._two_tdn.transitions.keys():
+                        node_name = current_transition.get_indexed_node(i)
 
-                        unrolled_net.node_lookup[node_name].set_cpd(self._two_tdn.get_transition_probability(j))
+                        unrolled_net.node_lookup[node_name].set_cpd(self._two_tdn.get_transition_probability(current_transition))
 
-                    for j in self._two_tdn.get_intra_edges():
-                        parent_node_name = j[0].get_indexed_node(i)
-                        child_node_name = j[1].get_indexed_node(i)
+                    for intra_pair in self._two_tdn.get_intra_edges():
+                        parent_node_name = intra_pair[0].get_indexed_node(i)
+                        child_node_name = intra_pair[1].get_indexed_node(i)
+                        children.append(child_node_name)
                         unrolled_net.add_edge(unrolled_net.node_lookup[parent_node_name],
                                               unrolled_net.node_lookup[child_node_name])
 
-                    for j in self._two_tdn.get_intra_edges():
-                        child_node_name = j[1].get_indexed_node(i)
-
-                        unrolled_net.node_lookup[child_node_name].set_cpd(
-                            self._d0.node_lookup[j[1].get_indexed_node(0)].cpd)
+                    for intra_child in children:
+                        unrolled_net.node_lookup[intra_child].set_cpd(
+                            self._d0.node_lookup[intra_child.split("_", 1)[0] + "_" + str(0)].cpd)
             "Since we are unrolling over a specified length, the partial ordering for the DN has to be extended"
             unrolled_net.extend_partial_ordering(self._d0.get_partial_ordering(), length)
         else:
@@ -725,7 +725,7 @@ class DecisionNetwork(object):
                         self.node_lookup[new_node.name] = new_node
 
                     elif isinstance(i, DecisionNode):
-                        new_node = DiscreteNode(i.get_indexed_node(index), i.values)
+                        new_node = DecisionNode(i.get_indexed_node(index), i.values)
                         self.decision_nodes.append(new_node)
                         self.node_lookup[new_node.name] = new_node
                     else:
