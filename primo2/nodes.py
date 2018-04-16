@@ -22,6 +22,8 @@
 import random
 
 import numpy as np
+import pandas as pd
+from math import sqrt, exp, pi
 
 
 class RandomNode(object):
@@ -559,6 +561,7 @@ class DecisionNode(RandomNode):
         self.deterministic = True
         self._update_dimensions()
         self.valid = False
+        self.action_norm = {}
 
     def add_parent(self, parentNode):
         """
@@ -614,6 +617,9 @@ class DecisionNode(RandomNode):
         self.cpd = np.ones(self.cpd.shape)
         self.cpd /= len(self.values)
 
+    def set_action_norm(self, action_norm):
+        self.action_norm = pd.DataFrame(action_norm)
+
     def set_cpd(self, cpd):
         """
             Allows to set the conditional probability density(table) of this
@@ -632,6 +638,25 @@ class DecisionNode(RandomNode):
             raise ValueError("The dimensions of the given cpd do not match the dependency structure of the node.")
         self.cpd = np.copy(cpd)
         self.valid = True
+
+    def get_best_action(self, skill_believe):
+        """
+        :param skill_believe: The current skill believe
+        :return: The reduced CPD with only the best chosen action
+        """
+        def get_normal(x, mu, var):
+            return (1 / (sqrt(2 * pi * var))) * exp(-((x - mu) ** 2) / (2 * var))
+
+        best_value = 0
+        best_action = None
+
+        for i in self.action_norm:
+            current_value = get_normal(skill_believe, self.action_norm.loc[('loc', i)], self.action_norm.loc[('scale', i)])
+            if current_value > best_value:
+                best_value = current_value
+                best_action = i
+
+        return self.cpd[self.values.index(best_action)]
 
 
 if __name__ == "__main__":

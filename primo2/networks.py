@@ -24,6 +24,7 @@ import networkx as nx
 from . import exceptions
 from . import nodes
 from primo2.nodes import RandomNode, DiscreteNode, DecisionNode, UtilityNode
+from math import exp, pi, sqrt
 
 
 class BayesianNetwork(object):
@@ -414,7 +415,8 @@ class DynamicDecisionNetwork(object):
                     for current_transition in self._two_tdn.transitions.keys():
                         node_name = current_transition.get_indexed_node(i)
 
-                        unrolled_net.node_lookup[node_name].set_cpd(self._two_tdn.get_transition_probability(current_transition))
+                        unrolled_net.node_lookup[node_name].set_cpd(
+                            self._two_tdn.get_transition_probability(current_transition))
                     for intra_pair in self._two_tdn.get_intra_edges():
                         parent_node_name = intra_pair[0].get_indexed_node(i)
                         child_node_name = intra_pair[1].get_indexed_node(i)
@@ -443,7 +445,8 @@ class DynamicDecisionNetwork(object):
                     for current_transition in self._two_tdn.transitions.keys():
                         node_name = current_transition.get_indexed_node(i)
 
-                        unrolled_net.node_lookup[node_name].set_cpd(self._two_tdn.get_transition_probability(current_transition))
+                        unrolled_net.node_lookup[node_name].set_cpd(
+                            self._two_tdn.get_transition_probability(current_transition))
 
                     for intra_pair in self._two_tdn.get_intra_edges():
                         parent_node_name = intra_pair[0].get_indexed_node(i)
@@ -512,7 +515,6 @@ class d0_net(object):
     def get_all_node_names(self):
         return self.node_lookup.keys()
 
-
 class Two_TDN(object):
     def __init__(self, inter_edges=None, intra_edges=None):
 
@@ -527,6 +529,8 @@ class Two_TDN(object):
             self.add_inter_edges(inter_edges)
         if intra_edges is not None:
             self.add_intra_edges(intra_edges)
+
+
 
     def add_nodes(self, nodes):
         for i in nodes:
