@@ -256,8 +256,6 @@ d0.add_edge(skill_0, observation_0)
 d0.add_edge(skill_0, action_0)
 d0.add_edge(action_0, observation_0)
 
-d0.set_zero_timeslice([skill_0, observation_0, action_0])
-
 d0.set_partial_ordering(["skill_0", "action_0", "observation_0"])
 
 skill_0.set_cpd([1.0 / 6, 1.0 / 6, 1.0 / 6, 1.0 / 6, 1.0 / 6, 1.0 / 6])
@@ -330,8 +328,6 @@ cpd = [[[[0.60, 1.00], [0.55, 1.00], [0.40, 1.00], [0.30, 1.00]],
         [[0, 0], [0, 0], [0, 0], [0, 0]]]]
 
 two_tdn.add_nodes([skill_t, action_t, observation_t, skill_t_plus_one, action_t_plus_one, observation_t_plus_one])
-two_tdn.set_t_timeslice([skill_t, action_t, observation_t])
-two_tdn.set_t_plus_one_timeslice([skill_t_plus_one, action_t_plus_one, observation_t_plus_one])
 
 two_tdn.add_intra_edge(skill_t, action_t)
 two_tdn.add_intra_edge(skill_t, observation_t)
@@ -342,9 +338,6 @@ two_tdn.add_inter_edge(action_t, skill_t_plus_one)
 two_tdn.add_inter_edge(observation_t, skill_t_plus_one)
 
 two_tdn.add_transition(skill_t_plus_one, cpd)
-
-
-# two_tdn.set_transition_probability(skill_t_plus_one, )
 
 DDN = DynamicDecisionNetwork(d0, two_tdn)
 

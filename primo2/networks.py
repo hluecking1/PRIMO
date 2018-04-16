@@ -399,11 +399,11 @@ class DynamicDecisionNetwork(object):
         if length > 0:
             for i in range(0, length):
                 if i == 0:
-                    unrolled_net.add_nodes(self._d0.timeslice[0] + self._d0.utility_nodes)
+                    unrolled_net.add_nodes(self._d0.get_all_nodes())
                 elif i == 1:
                     children = []
                     """copy nodes from the two_tdn Network into unrolled_net"""
-                    unrolled_net.copy_nodes_indexed(self._two_tdn.timeslice['t_plus_1'], i)
+                    unrolled_net.copy_nodes_indexed(self._two_tdn.get_future_nodes(), i)
                     for inter_pair in self._two_tdn.get_inter_edges():
                         parent_node_name = inter_pair[0].get_indexed_node(i - 1)
                         child_node_name = inter_pair[1].get_indexed_node(i)
@@ -429,12 +429,10 @@ class DynamicDecisionNetwork(object):
 
                 else:
                     children = []
-                    unrolled_net.copy_nodes_indexed(self._two_tdn.timeslice['t_plus_1'], i)
+                    unrolled_net.copy_nodes_indexed(self._two_tdn.get_future_nodes(), i)
                     # in case we dont want the decisions to be copied for every new timeslice but only for every
                     # two. Write this and leave the decisions node out of the timeslices in both d0 and two_tbn network:
                     # unrolled_net.copy_nodes_indexed(self._two_tdn.decision_nodes, i - 1)
-
-                    unrolled_net.copy_nodes_indexed(self._two_tdn.utility_nodes, i - 1)
 
                     for inter_pair in self._two_tdn.get_inter_edges():
                         parent_node_name = inter_pair[0].get_indexed_node(i - 1)
@@ -467,15 +465,11 @@ class DynamicDecisionNetwork(object):
 class d0_net(object):
 
     def __init__(self):
-        self.timeslice = {}
         self.utility_nodes = []
         self.decision_nodes = []
         self.random_nodes = []
         self.node_lookup = {}
         self.partialOrdering = []
-
-    def set_zero_timeslice(self, nodes):
-        self.timeslice[0] = nodes
 
     def add_nodes(self, nodes):
         for i in nodes:
@@ -522,7 +516,6 @@ class d0_net(object):
 class Two_TDN(object):
     def __init__(self, inter_edges=None, intra_edges=None):
 
-        self.timeslice = {}
         self.utility_nodes = []
         self.decision_nodes = []
         self.random_nodes = []
@@ -659,14 +652,8 @@ class Two_TDN(object):
     def get_transition_probability(self, node):
         return self.transitions[node]
 
-    def set_t_timeslice(self, initial_nodes):
-        self.timeslice['t'] = initial_nodes
-
-    def set_t_plus_one_timeslice(self, next_nodes):
-        self.timeslice['t_plus_1'] = next_nodes
-
-    def get_t_timeslice(self):
-        return self.timeslice['t']
+    def get_future_nodes(self):
+        return [self.node_lookup[x] for x in self.node_lookup.keys() if "t_plus_one" in x]
 
 
 class DecisionNetwork(object):
