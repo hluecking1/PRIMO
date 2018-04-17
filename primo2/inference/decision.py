@@ -215,7 +215,7 @@ class VariableElimination(object):
 
         return solution
 
-    def inner_product(self, factors, utilities=None):
+    def inner_product(self, factors, decision_factors=None, utilities=None):
         """
             Helper Function to multiply all factors in the given list. 
             This function is guided by the Algorithm 7.3.2 at page 112 in "Bayesian Reasoning and Machine Learning"
@@ -228,6 +228,10 @@ class VariableElimination(object):
             factors: list
                 A list of factors to be multiplied with
 
+            decision_factors: list
+                A list of decisions to be multiplied with the factors. Not none if the decisions
+                in the net have a decision rule (CPD)
+
             utilities: list
                 A list of utilities to be multiplied with the factors
 
@@ -236,14 +240,22 @@ class VariableElimination(object):
             Returns
             -------
                 factor
-                The resulting factor
+                The resulting (combined) factor
         """
-
         prob_product = factors[0]
 
         for i, v in enumerate(factors):
             if i != len(factors) - 1:
                 prob_product = prob_product * factors[i + 1]
+        combined_factors = prob_product
+
+        if decision_factors:
+            decision_product = decision_factors[0]
+
+            for i, v in enumerate(decision_factors):
+                if i != len(decision_factors) - 1:
+                    decision_product = decision_product * decision_factors[i + 1]
+            combined_factors = combined_factors * decision_product
 
         if utilities:
             utility_factors = [Factor.from_utility_node(i) for i in utilities]
@@ -253,16 +265,16 @@ class VariableElimination(object):
                 if i != len(utility_factors) - 1:
                     utility_sum = utility_sum + utility_factors[i + 1]
 
-            return prob_product * utility_sum
+            combined_factors = combined_factors * utility_sum
 
-        else:
-
-            return prob_product
+        return combined_factors
 
     def max_sum(self, decisionNode):
         """
             Max Sum Algorithm taken from the Algorithm 7.3.2 at page 112 in 
-            "Bayesian Reasoning and Machine Learning" from David Barber. 
+            "Bayesian Reasoning and Machine Learning" from David Barber.
+
+            NEW: Now works with decision rules (That means the decisions have a CPD)
 
             
             Parameters
@@ -280,18 +292,31 @@ class VariableElimination(object):
         reverseOrder = partialOrder[::-1]
         randomVariables = self.net.get_random_nodes()
         utilities = self.net.get_utility_nodes()
+        decisions = self.net.get_decision_nodes()
 
         factors = []
         for node in randomVariables:
             factors.append(Factor.from_node(node))
 
-        current = self.inner_product(factors, utilities)
+        decision_factors = []
+
+        'If All decision Nodes have a decision Rule'
+        if all(val.check_decision_rule() for val in decisions):
+            for node in decisions:
+                decision_factors.append(Factor.from_node(node))
+        else:
+            decision_factors = None
+
+        current = self.inner_product(factors, decision_factors, utilities)
         for i in reverseOrder:
             if isinstance(i, list):
-                if all(isinstance(self.net.node_lookup[val], DiscreteNode) for val in i):
+                if all(isinstance(self.net.node_lookup[val], DiscreteNode) for val in i) \
+                        or (all(isinstance(self.net.node_lookup[val], DecisionNode) for val in i)
+                            and all([val.check_decision_rule() for val in i])):
                     current = current.marginalize(i)
                 else:
-                    raise Exception("Marginalizing failed: Not all elements in the list are Discrete Nodes")
+                    raise Exception("Marginalizing failed: Not all elements in the list are Discrete Nodes or "
+                                    "Decision Nodes with a specified decision rule")
             elif isinstance(self.net.node_lookup[i], DiscreteNode):
                 current = current.marginalize(i)
             elif i != decisionNode:

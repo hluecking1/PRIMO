@@ -25,7 +25,8 @@ from . import exceptions
 from . import nodes
 from primo2.nodes import RandomNode, DiscreteNode, DecisionNode, UtilityNode
 from math import exp, pi, sqrt
-
+import pandas as pd
+import numpy as np
 
 class BayesianNetwork(object):
 
@@ -515,6 +516,7 @@ class d0_net(object):
     def get_all_node_names(self):
         return self.node_lookup.keys()
 
+
 class Two_TDN(object):
     def __init__(self, inter_edges=None, intra_edges=None):
 
@@ -529,8 +531,6 @@ class Two_TDN(object):
             self.add_inter_edges(inter_edges)
         if intra_edges is not None:
             self.add_intra_edges(intra_edges)
-
-
 
     def add_nodes(self, nodes):
         for i in nodes:
@@ -650,8 +650,33 @@ class Two_TDN(object):
     def get_inter_edges(self):
         return self._inter_edges
 
-    def add_transition(self, node, cpd):
-        self.transitions[node] = cpd
+    def add_transition(self, node, transition_):
+        """
+        Adds the transition probability from the child node of a two node pair connected through a persistent edge (
+        connecting two timeslices)
+        :param node: The child node we want to assign the CPD to
+        :param transition_: The transition CPD
+        """
+        if isinstance(transition_, dict):
+            cpd = []
+
+            def get_table(transition, answer, action):
+                return pd.DataFrame(transition[answer][action])
+
+            for i in transition_.keys():
+                temp = []
+                for j in transition_[i]:
+                    temp.append(get_table(transition_, i, j).as_matrix())
+
+                cpd.append(temp)
+
+            self.transitions[node] = np.array(cpd).T
+
+        elif isinstance(transition_, list):
+            self.transitions[node] = np.array(transition_)
+
+        else:
+            raise ValueError("The transition Matrix has to be either a dictionary or a list")
 
     def get_transition_probability(self, node):
         return self.transitions[node]

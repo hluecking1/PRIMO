@@ -558,9 +558,9 @@ class DecisionNode(RandomNode):
         self.state = None
         self.parentOrder = []
         self.parents = {}
+        self.decision_rule = False
         self.deterministic = True
         self._update_dimensions()
-        self.valid = False
         self.action_norm = {}
 
     def add_parent(self, parentNode):
@@ -590,12 +590,12 @@ class DecisionNode(RandomNode):
         for parentName in self.parentOrder:
             dimensions.append(len(self.parents[parentName].values))
         self.cpd = np.zeros(dimensions)
-        self.valid = False
+        self.decision_rule = False
 
     def set_decision(self, decision):
         """
             Sets the state of this decisionNode to the given decision.
-            This will equivalate a deterministic decision rule where only
+            This will equate a deterministic decision rule where only
             the given decision has a probability of 1.
             
             This invalidates any prior decision assignments.
@@ -637,13 +637,15 @@ class DecisionNode(RandomNode):
         if np.shape(self.cpd) != np.shape(cpd):
             raise ValueError("The dimensions of the given cpd do not match the dependency structure of the node.")
         self.cpd = np.copy(cpd)
-        self.valid = True
+        self.decision_rule = True
 
-    def get_best_action(self, skill_believe):
+    def set_best_action(self, skill_believe):
         """
+        Invalidates the current CPD and sets the decisionNode to the action based on the previous skill_believe
         :param skill_believe: The current skill believe
         :return: The reduced CPD with only the best chosen action
         """
+
         def get_normal(x, mu, var):
             return (1 / (sqrt(2 * pi * var))) * exp(-((x - mu) ** 2) / (2 * var))
 
@@ -651,12 +653,16 @@ class DecisionNode(RandomNode):
         best_action = None
 
         for i in self.action_norm:
-            current_value = get_normal(skill_believe, self.action_norm.loc[('loc', i)], self.action_norm.loc[('scale', i)])
+            current_value = get_normal(skill_believe, self.action_norm.loc[('loc', i)],
+                                       self.action_norm.loc[('scale', i)])
             if current_value > best_value:
                 best_value = current_value
                 best_action = i
 
-        return self.cpd[self.values.index(best_action)]
+        self.set_decision(best_action)
+
+    def check_decision_rule(self):
+        return self.decision_rule
 
 
 if __name__ == "__main__":
