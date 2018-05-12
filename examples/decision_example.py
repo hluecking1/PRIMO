@@ -364,14 +364,42 @@ two_tdn.add_inter_edge(skill_t, skill_t_plus_one)
 two_tdn.add_inter_edge(action_t, skill_t_plus_one)
 two_tdn.add_inter_edge(observation_t, skill_t_plus_one)
 
-two_tdn.add_transition(skill_t_plus_one, transition_dict)
+
+# This is just a helper function to translate the given dictionary to an array (for this specific example.
+# Should not be applied to different examples.
+
+def convert_to_array(transition_):
+    if isinstance(transition_, dict):
+        cpd = []
+
+        def get_table(transition, answer, action):
+            return pd.DataFrame(transition[answer][action])
+
+        for i in transition_.keys():
+            temp = []
+            for j in transition_[i]:
+                temp.append(get_table(transition_, i, j).as_matrix())
+
+            cpd.append(temp)
+
+        # return np.transpose(np.array(cpd).T, (0, 1, 3, 2))
+        return np.array(cpd).T
+
+
+print(convert_to_array(transition_dict).shape)
+two_tdn.add_transition(skill_t_plus_one, convert_to_array(transition_dict))
 
 DDN = DynamicDecisionNetwork(d0, two_tdn)
 new_net = DDN.unroll(2)
 
-ve = VariableElimination(new_net)
+for i in new_net.get_all_nodes():
+    print "Current One:"
+    print i.name
+    print(i.cpd)
+
+# ve = VariableElimination(new_net)
 # print("Optimal decision: ", ve.get_optimal_decisions(["action_0"]))
-print("Get optimal decision for action_0 using max_sum Algorithm: {}".format(ve.max_sum("action_0")))
+# print("Get optimal decision for action_0 using max_sum Algorithm: {}".format(ve.max_sum("action_0")))
 
 # mu = [.15, .40, .625, .85]
 # variance = [.05, .05, .05, .05]

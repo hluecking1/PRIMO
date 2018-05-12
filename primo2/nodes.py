@@ -41,6 +41,11 @@ class RandomNode(object):
     def set_cpd(self, cpd):
         raise NotImplementedError("Called unimplemented method.")
 
+    def get_unindexed_node(self):
+        return self.name.split("_", 1)[0]
+
+    def get_index(self):
+        return self.name.split("_", 1)[1]
     # Renames a node to the scheme: "Node_index" and returns it
     def get_indexed_node(self, index):
         return self.name.split("_", 1)[0] + "_" + str(index)

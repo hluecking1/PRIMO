@@ -215,7 +215,8 @@ class VariableElimination(object):
 
         return solution
 
-    def inner_product(self, factors, decision_factors=None, utilities=None):
+    @staticmethod
+    def inner_product(factors, decision_factors=None, utilities=None):
         """
             Helper Function to multiply all factors in the given list. 
             This function is guided by the Algorithm 7.3.2 at page 112 in "Bayesian Reasoning and Machine Learning"

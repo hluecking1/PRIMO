@@ -27,6 +27,8 @@ from primo2.nodes import RandomNode, DiscreteNode, DecisionNode, UtilityNode
 from math import exp, pi, sqrt
 import pandas as pd
 import numpy as np
+from primo2.inference.factor import Factor
+
 
 class BayesianNetwork(object):
 
@@ -387,6 +389,35 @@ class DynamicDecisionNetwork(object):
         self._d0 = d0_net() if d0 is None else d0
         self._two_tdn = Two_TDN() if two_tdn is None else two_tdn
 
+    @staticmethod
+    def update(node):
+        print ("In Update Method \n")
+        factor_parents_all_ = []
+        factor_parents_persist = []
+        node_factor = Factor.from_node(node)
+        print "Ordering of the parents \n"
+        for j in node.parents.values():
+            factor_parents_all_.append(Factor.from_node(j))
+            if node.get_unindexed_node() == j.get_unindexed_node():
+                factor_parents_persist.append(Factor.from_node(node.parents[j]))
+
+        prob_product = node_factor
+        print "Initial Shape"
+        print prob_product.potentials.shape
+        for i, _ in enumerate(factor_parents_all_):
+            print "We are multiplying with:", node.parents.keys()[i]
+
+            if i != len(factor_parents_all_):
+                print "Shape after Multiplication"
+                prob_product = prob_product * factor_parents_all_[i]
+                print prob_product.potentials.shape
+
+        print "Final shape"
+        print(prob_product.get_potential().shape)
+        prob_product = prob_product.marginalize(node.parentOrder)
+        print prob_product.potentials.shape
+        return prob_product.get_potential()
+
     def unroll(self, length):
 
         """Unrolling the network over specified length.
@@ -415,9 +446,18 @@ class DynamicDecisionNetwork(object):
                     "Copy the CPD's describing the transition probability (defined by the two_tdn) into the new net"
                     for current_transition in self._two_tdn.transitions.keys():
                         node_name = current_transition.get_indexed_node(i)
-
                         unrolled_net.node_lookup[node_name].set_cpd(
                             self._two_tdn.get_transition_probability(current_transition))
+
+                    potential = self.update(unrolled_net.node_lookup[node_name])
+
+                    for inter_pair in self._two_tdn.get_inter_edges():
+                        parent_node_name = inter_pair[0].get_indexed_node(i - 1)
+                        child_node_name = inter_pair[1].get_indexed_node(i)
+                        unrolled_net.remove_edge(unrolled_net.node_lookup[parent_node_name],
+                                                 unrolled_net.node_lookup[child_node_name])
+                    unrolled_net.node_lookup[node_name].set_cpd(potential)
+
                     for intra_pair in self._two_tdn.get_intra_edges():
                         parent_node_name = intra_pair[0].get_indexed_node(i)
                         child_node_name = intra_pair[1].get_indexed_node(i)
@@ -448,6 +488,15 @@ class DynamicDecisionNetwork(object):
 
                         unrolled_net.node_lookup[node_name].set_cpd(
                             self._two_tdn.get_transition_probability(current_transition))
+
+                    potential = self.update(unrolled_net.node_lookup[node_name])
+
+                    for inter_pair in self._two_tdn.get_inter_edges():
+                        parent_node_name = inter_pair[0].get_indexed_node(i - 1)
+                        child_node_name = inter_pair[1].get_indexed_node(i)
+                        unrolled_net.remove_edge(unrolled_net.node_lookup[parent_node_name],
+                                                 unrolled_net.node_lookup[child_node_name])
+                    unrolled_net.node_lookup[node_name].set_cpd(potential)
 
                     for intra_pair in self._two_tdn.get_intra_edges():
                         parent_node_name = intra_pair[0].get_indexed_node(i)
@@ -494,6 +543,9 @@ class d0_net(object):
 
     def add_edge(self, node_from, node_to):
         self.node_lookup[node_to].add_parent(self.node_lookup[node_from])
+
+    def remove_edge(self, node_from, node_to):
+        self.node_lookup[node_to].remove_parent(self.node_lookup[node_from])
 
     def get_partial_ordering(self):
         return self.partialOrdering
@@ -657,26 +709,8 @@ class Two_TDN(object):
         :param node: The child node we want to assign the CPD to
         :param transition_: The transition CPD
         """
-        if isinstance(transition_, dict):
-            cpd = []
 
-            def get_table(transition, answer, action):
-                return pd.DataFrame(transition[answer][action])
-
-            for i in transition_.keys():
-                temp = []
-                for j in transition_[i]:
-                    temp.append(get_table(transition_, i, j).as_matrix())
-
-                cpd.append(temp)
-
-            self.transitions[node] = np.array(cpd).T
-
-        elif isinstance(transition_, list):
-            self.transitions[node] = np.array(transition_)
-
-        else:
-            raise ValueError("The transition Matrix has to be either a dictionary or a list")
+        self.transitions[node] = np.array(transition_)
 
     def get_transition_probability(self, node):
         return self.transitions[node]
@@ -755,6 +789,9 @@ class DecisionNetwork(object):
     def add_edge(self, node_from, node_to):
 
         self.node_lookup[node_to].add_parent(self.node_lookup[node_from])
+
+    def remove_edge(self, node_from, node_to):
+        self.node_lookup[node_to].remove_parent(self.node_lookup[node_from])
 
     def get_partial_ordering(self):
         return self.partialOrdering
